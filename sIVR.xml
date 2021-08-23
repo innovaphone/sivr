@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<voicemail>
+<!-- simple IVR == innovaphone AG KWA 05 2020 -->
+	<function define="IVRinput"> 
+		<timer name="IVRto" sec="15" /> 
+		<event type="dtmf" block="false">
+		  	<timer name="IVRto" sec="10" />  
+  		 	<pbx-getdtmfdigit out-dtmf="$dtmf" /> 
+			<switch var="$dtmf">
+				<case equal="#">
+					<assign out="$nodir" value="true" />					
+					<assign out="$nextplay" value="true" />
+					<return />
+				</case>
+				<case equal="*">
+					<assign out="$nodir" value="true" />
+					<assign out="$nextplay" value="true" />
+					<return />
+				</case>
+ 			 </switch>
+			 <store-getstat root="$ActPath" name="Target.txt" out-error="$error" />
+			 <if notcond="$error">
+				<store-cookie root="$ActPath" name="Target.txt" out="$Target"/>
+			 </if>
+			 <lib-strcat string="$res" string2="$dtmf" out-string="$res" />
+			 <lib-strcat string="$ActPath" string2="/" out-string="$ActPath" />
+			 <lib-strcat string="$ActPath" string2="$dtmf" out-string="$ActPath" />
+    			 <store-getstat root="$ActPath" name="/" out-error="$error" />
+			 <if cond="$error">
+				<assign out="$nodir" value="true" />
+				<assign out="$nextplay" value="true" />
+				<return />
+            		 </if>
+			 <assign out="$nextplay" value="true" />
+		</event>
+		<store-get root="ROOT" name="$MyName" out-url="$ctrl" />
+		<while notcond="$nextplay">
+			<pbx-prompt url="$ctrl" repeat="true" />  	
+		</while>
+		<assign out="$MyName" value="T" /> 	
+	       	<lib-strcat string="$MyName" string2="$res" out-string="$MyName" />
+	 	<lib-strcat string="$MyName" string2=".$coder" out-string="$MyName" />
+		<assign out="$nextplay" value="false" />
+	</function>
+	<function define="Main">
+		<pbx-getcallinfo out-cgpn="$cgpn" out-cdpn="$cdpn" out-leg2="$leg2" />
+		<store-cookie root="" name="Target.txt" out="$Target"/>
+		<store-get root="" name="T100.$coder" out-url="$ctrl" />
+		<pbx-prompt url="$ctrl" repeat="false" />  	
+		<assign out="$ActPath" value="ROOT" />   
+		<event type="timer" name="IVRto">
+  		  	<assign out="$nodir" value="true" /> 
+			<assign out="$nextplay" value="true" />
+  		</event>
+		<timer name="IVRto" sec="15" /> 
+		<assign out="$nodir" value="false" /> 
+		<assign out="$res" value="" />  
+		<assign out="$MyName" value="T0.$coder" /> 	
+		<while notcond="$nodir">
+			<call name="IVRinput" /> 
+   		</while>
+		<lib-strcat string="##" string2="$res" out-string="$Teiln" />
+		<lib-strcat string="$cgpn" string2="$Teiln" out-string="$Teiln" />
+		<pbx-prepcallinfo cgpn="$Teiln"/>
+		<pbx-xfer e164="$Target" />
+      </function>    
+</voicemail>
+<!-- Simple IVR wiki-src/xml/sIVR 1,0,0,0 (C) innovaphone AG 2010-2020 -->
