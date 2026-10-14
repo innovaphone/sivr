@@ -1,2 +1,2 @@
 # sivr
-http://wiki.innovaphone.com/index.php?title=Howto:Simple_IVR
+https://wiki.innovaphone.com/index.php?title=Howto:Simple_IVR
